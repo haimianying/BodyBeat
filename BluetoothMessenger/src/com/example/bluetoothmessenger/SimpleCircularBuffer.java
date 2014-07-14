@@ -2,6 +2,7 @@ package com.example.bluetoothmessenger;
 
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import android.os.AsyncTask;
 
@@ -21,17 +22,18 @@ public class SimpleCircularBuffer {
 	private boolean firstRun;
 
 	// Variables dictating the sizes of the buffer
-	public int frameSize = 513;// <----
+	public int frameSize = 256;// <---- The total number of data transferred from Embedded Unit 
+								// total bytes/ bytes in each val
 	private int windowSize = 24;
 	private int windowShift = 12;// <---- for 50% overlap
 	private int len = 10 * windowSize;// <-----The total number of rows in the
-										// two dimensional circular buffer,
-										// frameLevelFeatures
-	private int numFeatures = 14;
+										// full two dimensional circular buffer,
+										// frameLevelFeatures, which will contain multiple (10) windows
+	private int numFeatures = 14;// <---- number of window level features.
 
 	public SimpleCircularBuffer() {
 		frameLevelFeatures = new double[len][numFeatures];
-		counter = 0;
+		counter = 0;// <---- index of frame/row of frameLevelFeatures matrix
 		firstRun = true;
 
 		FeatureExtraction.initVariables();
@@ -50,13 +52,19 @@ public class SimpleCircularBuffer {
 		double[] frame = new double[frameSize];
 		// convert the byte inputs to int16
 		for (int i = 0; i < frameSize; i++) {
-			byte[] int16 = { ins[i * 2 + 1], ins[i * 2] };// <------- It was in
+			//byte[] val_int16 = { ins[i * 2 + 1], ins[i * 2] };// <------- It was in
 															// the reverse
 															// order, I just
 															// changed it.
-			frame[i] = 1.0 * (ByteBuffer.wrap(int16).getShort());
+			//frame[i] = 1.0 * (ByteBuffer.wrap(val_int16).getShort());
+			
+			
+			byte[] val_int32 = { ins[i * 4 + 3], ins[i * 4 + 2], ins[i * 4 + 1], ins[i * 4] };// <------- It was in
+															// the reverse
+															// order, I just
+															// changed it.
+			frame[i] = 1.0 * (ByteBuffer.wrap(val_int32).getInt());
 		}
-		// Print data from each frame
 
 		// Log.v(TAG, "Began frame at: " + System.currentTimeMillis());
 		double[] feats = FeatureExtraction.features(frame);
@@ -64,12 +72,13 @@ public class SimpleCircularBuffer {
 			frameLevelFeatures[counter][i] = feats[i];
 		}
 
-		// Write to file
-		// pw.append(Arrays.toString(data) + " FrameLevFeat: " +
-		// Arrays.toString(feats));
-		// pw.append("\n");
-		// pw.flush();
-
+		//Write to file for debugging purpose 
+		pw.append(" RawData: " + Arrays.toString(frame)); // Print data from each frame
+		//pw.append(" FrameLevFeat: " + Arrays.toString(feats)); // Print Frame Level features
+		pw.append("\n");
+		pw.flush();
+		
+		/* <<<--------Commented out the following lines for debugging purposes.
 		// Perform calculations if a window was completed
 		if ((counter + 1) % windowShift == 0) {
 
@@ -84,6 +93,7 @@ public class SimpleCircularBuffer {
 			else if (!firstRun)
 				new SignalProcessNInferenceThread().execute(counter);
 		}
+		*/
 
 		// increment the counter
 		counter = (counter + 1 == len) ? 0 : counter + 1;

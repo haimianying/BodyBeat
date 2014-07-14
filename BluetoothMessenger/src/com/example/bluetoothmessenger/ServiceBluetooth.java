@@ -58,7 +58,7 @@ public class ServiceBluetooth extends Service {
 	protected static final int MESSAGE_READ = 1;
 	IntentFilter filter;
 	BroadcastReceiver receiver;
-	String tag = "BodyAcousticDebug";
+	String tag = "BodyBeatDebug";
 	String write_to_file = "";
 	String filename = "default";
 
@@ -144,7 +144,7 @@ public class ServiceBluetooth extends Service {
 		// Creating the file to write the raw data (for training our model)
 		filename = intent.getStringExtra(FILENAME);
 		String filepath = Environment.getExternalStorageDirectory().getPath();
-		File dir = new File(filepath, "BluetoothReports");
+		File dir = new File(filepath, "BodyBeatDebug");
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
@@ -187,7 +187,7 @@ public class ServiceBluetooth extends Service {
 
 		wakeLock.release();
 	}
-
+	
 	private void getPairedDevices() {
 		// Get the paired devices via devicesArray (which is initialized in the
 		// init()) and
@@ -205,7 +205,7 @@ public class ServiceBluetooth extends Service {
 					Toast.LENGTH_SHORT).show();
 		}
 	}
-
+	
 	private void init() {
 
 		btAdapter = BluetoothAdapter.getDefaultAdapter();// initializing the
@@ -229,7 +229,7 @@ public class ServiceBluetooth extends Service {
 		filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
 		registerReceiver(receiver, filter);
 	}
-
+	
 	private class ConnectThread extends Thread {
 
 		private final BluetoothSocket mmSocket;
@@ -307,7 +307,7 @@ public class ServiceBluetooth extends Service {
 			while (true) {
 				try {
 					// Read from the InputStream
-					buffer = new byte[1024];
+					buffer = new byte[1024];//<-----------I am not sure if it should be 1024
 					bytes = mmInStream.read(buffer);
 
 					mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)

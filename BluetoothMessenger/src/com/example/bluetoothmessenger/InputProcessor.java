@@ -13,7 +13,7 @@ public class InputProcessor {
 
 	SimpleCircularBuffer cirBuffer;
 	PrintWriter pw;
-	int len = 1026;// <------------Specify the number of bytes each frame
+	int len = 1024;// <------------Specify the number of bytes each frame
 					// contains
 	byte[] msgBuffer = new byte[len]; // <------buffer that keeps a frame data
 	int count = 0;
@@ -24,7 +24,7 @@ public class InputProcessor {
 									// to find the header
 	boolean isReadingFFs = true; // because at the very beginning we are still
 									// looking for FFs
-	private static final String TAG = "InputProcessor";
+	private static final String TAG = "BodyBeatDebug";
 
 	public InputProcessor(PrintWriter p) {
 		pw = p;
@@ -38,11 +38,12 @@ public class InputProcessor {
 		if (!ignoreCorrupted) { // This data had the FF header
 
 			int numBeforeFull = len - count;
-
+			Log.i(TAG, "Bytes Available to read: " + numRead);
+			Log.i(TAG, "Bytes Needed Before Full: " + numBeforeFull);
 			if (count + numRead >= len) {
 				// update the circular buffer
 				System.arraycopy(readBuf, 0, msgBuffer, count, numBeforeFull);
-				cirBuffer.update(msgBuffer, pw);
+				cirBuffer.update(msgBuffer, pw); // <<------Entry point to SimpleCircularBuffer Class
 				count = 0;
 				ignoreCorrupted = true;
 				isReadingFFs = true;
