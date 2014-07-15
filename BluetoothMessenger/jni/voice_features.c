@@ -126,7 +126,7 @@ double computeLogTotalPower(double *powerSpec2, int len) {
 }
 
 void computeLogSubbandPower(double *powerSpec2, int len, double *logSubbandPwr) {
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < 7; i++) {
 		logSubbandPwr[i] = 0;
 	}
 	for (i = 0; i < len; i = i + 1) {
@@ -151,12 +151,12 @@ void computeLogSubbandPower(double *powerSpec2, int len, double *logSubbandPwr) 
 		} else if (ans > HALF_SAMPLING_FREQ / 4
 				&& ans <= HALF_SAMPLING_FREQ / 2) {
 			logSubbandPwr[6] += powerSpec2[i];
-		} else if (ans > HALF_SAMPLING_FREQ / 2 && ans <= HALF_SAMPLING_FREQ) {
+		} /*else if (ans > HALF_SAMPLING_FREQ / 2 && ans <= HALF_SAMPLING_FREQ) {
 			logSubbandPwr[7] += powerSpec2[i];
-		}
+		}*/
 	}
 
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < 7; i++) {
 		logSubbandPwr[i] = log(logSubbandPwr[i]);
 	}
 

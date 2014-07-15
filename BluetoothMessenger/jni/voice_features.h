@@ -9,7 +9,7 @@
 extern int numAcorrPeaks, maxAcorrPeakLag;
 extern float maxAcorrPeakVal;
 extern double * inputFrameData;//This will contain the power spectra sent from the Maple side
-extern double * normalizedSpec;//This will contain the power spectra sent from the Maple side
+extern double * normalizedSpec;//This will contain the normalized power spectra sent from the Maple side
 extern float *normalizedData;
 extern double *magnSpect;
 extern double *acorrPeakValueArray;

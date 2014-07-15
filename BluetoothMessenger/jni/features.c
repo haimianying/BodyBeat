@@ -67,16 +67,17 @@ JNIEXPORT void JNICALL Java_com_example_processing_FeatureExtraction_initVariabl
 	if(DEBUG) LOGD("JNI audio init mfcc");
 
 	//initializing the features for functions in voice_features.c
+	//Make sure that the parameters like FRAME_LENGTH in parameter_features.h is correct.
 	initVoicedFeaturesFunction();
 
 	//initializing the features for functions in mfcc.c
 	//initMfcc(sample_rate, mell, high_freq, low_freq, inputlen);
-	initMfcc(8000, 12, 4000, 20, 513);
+	//initMfcc(8000, 12, 4000, 20, 513);
 
 	frameLevelFeat = (double *) malloc(TOTAL_FEAT * sizeof(double));
 	windowLevelFeat = (double *) malloc(TOTAL_WINDOW_LEVEL_FEAT * sizeof(double));
 	featiPerWindow = (double *) malloc(FRAME_PER_WINDOW * sizeof(double));
-	logSubbandPwr = (double *) malloc(8 * sizeof(double)); //size of logSubBandPwr is 8 now
+	logSubbandPwr = (double *) malloc(7 * sizeof(double)); //size of logSubBandPwr is 7 now
 	fitnessMeasure = (double *) malloc(NUM_MODEL * sizeof(double));
 	return;
 }
@@ -91,7 +92,7 @@ JNIEXPORT void JNICALL Java_com_example_processing_FeatureExtraction_delVariable
 	destroyVoicedFeaturesFunction();
 
 	//deleting the features for functions in mfcc.c
-	delMfcc();
+	//delMfcc();
 
 	SAFE_DELETE(frameLevelFeat);
 	SAFE_DELETE(windowLevelFeat);
@@ -115,27 +116,30 @@ JNIEXPORT jdoubleArray JNICALL Java_com_example_processing_FeatureExtraction_fea
 	inputFrameData = (*env)->GetDoubleArrayElements(env, data, 0);// need to figure out if jdouble can be easily type casted to double
 	jdoubleArray results = (*env) -> NewDoubleArray(env, TOTAL_FEAT);//initializing the output double array
 
-	// Do the pre-processing
+	// Normalizing the raw magnitude spectra from Embedded Unit and stores the output in normalizedSpec.
+	// It is implemented in voice_features.c
 	normalizeSpec(FRAME_LENGTH);
 
-	//Do the frame level feature extraction
-	frameLevelFeat[0] = spectralRolloff(FRAME_LENGTH,.9);
-	frameLevelFeat[1] = spectralCentroid(FRAME_LENGTH);
-	frameLevelFeat[2] = spectralVariance(frameLevelFeat[1], FRAME_LENGTH);
-	frameLevelFeat[3] = spectralSkew(frameLevelFeat[1], frameLevelFeat[2], FRAME_LENGTH);
-	frameLevelFeat[4] = spectralEntropy(FRAME_LENGTH);
+	//Do the frame level feature extraction, It stores all the values in frameLevelFeat array.
+	//Make sure frameLevelFeat is initialized properly above.......
+
+	//frameLevelFeat[0] = spectralRolloff(FRAME_LENGTH,.9); // implemented in voice_features.c
+	//frameLevelFeat[1] = spectralCentroid(FRAME_LENGTH);
+	//frameLevelFeat[2] = spectralVariance(frameLevelFeat[1], FRAME_LENGTH);
+	//frameLevelFeat[3] = spectralSkew(frameLevelFeat[1], frameLevelFeat[2], FRAME_LENGTH);
+	//frameLevelFeat[4] = spectralEntropy(FRAME_LENGTH);
 
 	//frameLevelFeat[5] = mean(normalizedSpec, FRAME_LENGTH);
 	//frameLevelFeat[6] = variance(normalizedSpec, FRAME_LENGTH, frameLevelFeat[5]);
 	//frameLevelFeat[7] = variance(normalizedSpec, FRAME_LENGTH, 0);//rms
-
 	//frameLevelFeat[8] = min(normalizedSpec, FRAME_LENGTH);
 	//frameLevelFeat[9] = max(normalizedSpec, FRAME_LENGTH);
 
-	frameLevelFeat[5] = computeLogTotalPower(inputFrameData, FRAME_LENGTH);
+	//frameLevelFeat[5] = computeLogTotalPower(inputFrameData, FRAME_LENGTH);
 
-	computeLogSubbandPower(inputFrameData, FRAME_LENGTH, logSubbandPwr);//5 values
-	memcpy(frameLevelFeat+6, logSubbandPwr, (8)*sizeof(double) );
+	//implemented in voice_features.c where logSubbandPwr is the output of the log filterbank energy containing 7 values
+	computeLogSubbandPower(inputFrameData, FRAME_LENGTH, logSubbandPwr);
+	memcpy(frameLevelFeat, logSubbandPwr, (7)*sizeof(double) );
 
 	// Single feature mfcc
 	//mfccBuffer = calculateMfcc(inputFrameData);
